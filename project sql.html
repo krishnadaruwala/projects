@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SQL Command Interface</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --background-color: #f4f4f4;
+            --text-color: #333;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            line-height: 1.6;
+            background-color: var(--background-color);
+            color: var(--text-color);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 250px 1fr;
+            gap: 20px;
+        }
+
+        .sidebar {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        .sidebar-menu {
+            list-style-type: none;
+        }
+
+        .sidebar-menu li {
+            margin-bottom: 10px;
+        }
+
+        .sidebar-menu button {
+            width: 100%;
+            padding: 10px;
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .sidebar-menu button:hover {
+            background-color: #2980b9;
+        }
+
+        .main-content {
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+        .command-section {
+            display: none;
+        }
+
+        .command-section.active {
+            display: block;
+        }
+
+        .sql-input {
+            width: 100%;
+            min-height: 150px;
+            margin-bottom: 20px;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            resize: vertical;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .action-buttons button {
+            padding: 10px 15px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+
+        .execute-btn {
+            background-color: var(--secondary-color);
+            color: white;
+        }
+
+        .clear-btn {
+            background-color: #e74c3c;
+            color: white;
+        }
+
+        .result-section {
+            background-color: #f9f9f9;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            padding: 15px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .result-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        .result-table th, .result-table td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        .result-table th {
+            background-color: #f2f2f2;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="sidebar">
+            <h2><i class="fas fa-database"></i> SQL Tools</h2>
+            <ul class="sidebar-menu">
+                <li><button onclick="showSection('query')"><i class="fas fa-terminal"></i> Query Editor</button></li>
+                <li><button onclick="showSection('table-create')"><i class="fas fa-table"></i> Create Table</button></li>
+                <li><button onclick="showSection('data-insert')"><i class="fas fa-plus-circle"></i> Insert Data</button></li>
+                <li><button onclick="showSection('data-view')"><i class="fas fa-eye"></i> View Data</button></li>
+            </ul>
+        </div>
+        <div class="main-content">
+            <div id="query" class="command-section active">
+                <h2>SQL Query Editor</h2>
+                <textarea id="sqlInput" class="sql-input" placeholder="Enter your SQL query here..."></textarea>
+                <div class="action-buttons">
+                    <button class="execute-btn" onclick="executeQuery()">
+                        <i class="fas fa-play"></i> Execute
+                    </button>
+                    <button class="clear-btn" onclick="clearQuery()">
+                        <i class="fas fa-trash"></i> Clear
+                    </button>
+                </div>
+                <div id="queryResult" class="result-section">
+                    Results will appear here...
+                </div>
+            </div>
+
+            <div id="table-create" class="command-section">
+                <h2>Create New Table</h2>
+                <textarea id="tableCreateInput" class="sql-input" placeholder="CREATE TABLE example (
+    id INT PRIMARY KEY,
+    name VARCHAR(100),
+    age INT
+);"></textarea>
+                <div class="action-buttons">
+                    <button class="execute-btn" onclick="createTable()">
+                        <i class="fas fa-plus"></i> Create Table
+                    </button>
+                </div>
+            </div>
+
+            <div id="data-insert" class="command-section">
+                <h2>Insert Data</h2>
+                <textarea id="dataInsertInput" class="sql-input" placeholder="INSERT INTO tablename (column1, column2) 
+VALUES (value1, value2);"></textarea>
+                <div class="action-buttons">
+                    <button class="execute-btn" onclick="insertData()">
+                        <i class="fas fa-database"></i> Insert
+                    </button>
+                </div>
+            </div>
+
+            <div id="data-view" class="command-section">
+                <h2>View Table Data</h2>
+                <textarea id="dataViewInput" class="sql-input" placeholder="SELECT * FROM tablename;"></textarea>
+                <div class="action-buttons">
+                    <button class="execute-btn" onclick="viewData()">
+                        <i class="fas fa-eye"></i> View Data
+                    </button>
+                </div>
+                <div id="dataViewResult" class="result-section">
+                    Table data will appear here...
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function showSection(sectionId) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.command-section');
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+
+            // Show selected section
+            const selectedSection = document.getElementById(sectionId);
+            selectedSection.classList.add('active');
+        }
+
+        function executeQuery() {
+            const sqlInput = document.getElementById('sqlInput').value;
+            const resultDiv = document.getElementById('queryResult');
+
+            // Simulate query execution (replace with actual backend logic)
+            resultDiv.innerHTML = `
+                <h3>Query Executed:</h3>
+                <pre>${sqlInput}</pre>
+                <h4>Simulated Result:</h4>
+                <table class="result-table">
+                    <tr>
+                        <th>ID</th>
+                        <th>Name</th>
+                        <th>Status</th>
+                    </tr>
+                    <tr>
+                        <td>1</td>
+                        <td>Sample Data</td>
+                        <td>Success</td>
+                    </tr>
+                </table>
+            `;
+        }
+
+        function clearQuery() {
+            document.getElementById('sqlInput').value = '';
+            document.getElementById('queryResult').innerHTML = 'Results will appear here...';
+        }
+
+        function createTable() {
+            const tableInput = document.getElementById('tableCreateInput').value;
+            alert(`Table Creation Query: \n${tableInput}\n\nSimulating table creation...`);
+        }
+
+        function insertData() {
+            const insertInput = document.getElementById('dataInsertInput').value;
+            alert(`Insert Data Query: \n${insertInput}\n\nSimulating data insertion...`);
+        }
+
+        function viewData() {
+            const viewInput = document.getElementById('dataViewInput').value;
+            const resultDiv = document.getElementById('dataViewResult');
+
+            resultDiv.innerHTML = `
+                <h3>View Query:</h3>
+                <pre>${viewInput}</pre>
+                <table class="result-table">
+                    <tr>
+                        <th>Column 1</th>
+                        <th>Column 2</th>
+                        <th>Column 3</th>
+                    </tr>
+                    <tr>
+                        <td>Data 1</td>
+                        <td>Data 2</td>
+                        <td>Data 3</td>
+                    </tr>
+                </table>
+            `;
+        }
+    </script>
+</body>
+</html>
